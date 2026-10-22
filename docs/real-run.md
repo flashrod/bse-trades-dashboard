@@ -17,7 +17,7 @@ The estimate is deliberately approximate; the tape holds exactly 5,000 unique tr
 
 ## How it started
 
-The database was truncated and the stack was booted with defaults. The pull started the moment the API finished migrating, from the empty-tape bootstrap — no button press, no manual `POST /pulls`:
+The database was truncated and the stack was booted with defaults. The pull started the moment the API finished migrating, from the empty-tape bootstrap, with no button press, no manual `POST /pulls`:
 
 ```
 api listening  2026-10-22T06:45:52Z

@@ -8,7 +8,7 @@ apps/api        our API   :4000   chunked resumable puller, Postgres, SSE
 apps/web        dashboard :5173   React + Vite, snapshot first paint, live merge
 ```
 
-**Real 15-minute run:** [docs/real-run.md](./docs/real-run.md)
+**Video walkthrough:** [https://youtu.be/MVSFYszLKmg](https://youtu.be/MVSFYszLKmg) · **Real 15-minute run:** [docs/real-run.md](./docs/real-run.md)
 
 Everything runs locally: no hosted demo, no external services beyond Docker.
 
@@ -43,14 +43,14 @@ The mock keeps its 15-minute throughput model consistent: at `180ms/row`, a page
 
 ## What you can verify in two minutes
 
-1. **Instant open mid-pull** — start a pull, refresh a second tab. It paints from Postgres immediately while the pull is still running.
-2. **Live updates without refresh** — keep two tabs open; rows and progress appear in both as slices commit.
-3. **Resume, not restart** — inject upstream failures, watch the pull fail, press Start pull again, watch it continue from the last committed cursor:
+1. **Instant open mid-pull**: start a pull, refresh a second tab. It paints from Postgres immediately while the pull is still running.
+2. **Live updates without refresh**: keep two tabs open; rows and progress appear in both as slices commit.
+3. **Resume, not restart**: inject upstream failures, watch the pull fail, press Start pull again, watch it continue from the last committed cursor:
    ```bash
    curl -X POST 'localhost:4001/__admin/fail-next?count=3'
    ```
-4. **No duplicates** — `curl localhost:4000/stats`, then pull again. A re-pull inserts `0` new rows.
-5. **New trades across pulls** — add fresh prints, then pull again:
+4. **No duplicates**: `curl localhost:4000/stats`, then pull again. A re-pull inserts `0` new rows.
+5. **New trades across pulls**: add fresh prints, then pull again:
    ```bash
    curl -X POST 'localhost:4001/__admin/burst?count=250'
    ```
@@ -121,9 +121,9 @@ npm run build
 
 The brief asked for a repo and a walkthrough, not a hosted demo, so nothing is deployed. The services are deployment-shaped if you want to run them elsewhere:
 
-- **Backend** — `npm run build`, then run `node apps/mock-bse/dist/index.js` and `node apps/api/dist/index.js` as ordinary Node services. Give each a `PORT`, and the API a `DATABASE_URL` and `MOCK_URL`.
-- **Postgres** — any managed instance works; the API migrates its own schema on boot.
-- **Frontend** — build with `VITE_API_URL=https://<api-host>` and serve `apps/web/dist` from any static host. Set `FRONTEND_ORIGINS` on the API to that host.
+- **Backend**: `npm run build`, then run `node apps/mock-bse/dist/index.js` and `node apps/api/dist/index.js` as ordinary Node services. Give each a `PORT`, and the API a `DATABASE_URL` and `MOCK_URL`.
+- **Postgres**: any managed instance works; the API migrates its own schema on boot.
+- **Frontend**: build with `VITE_API_URL=https://<api-host>` and serve `apps/web/dist` from any static host. Set `FRONTEND_ORIGINS` on the API to that host.
 
 Keep the browser talking to the API directly. SSE is one long-lived request, so no serverless timeout applies to the 15-minute pull; if you put the API behind a proxy, disable response buffering for `/events`.
 
@@ -179,7 +179,7 @@ sequenceDiagram
   API-->>UI: first paint (<300ms)
 
   UI->>API: POST /pulls
-  API->>DB: INSERT pulls (running) — partial unique index
+  API->>DB: INSERT pulls (running)<br/>partial unique index
   API-->>UI: 202 + pullId
   API->>DB: INSERT event pull.started
   API-->>UI: SSE pull.started
@@ -250,14 +250,14 @@ The cursor can never point past rows that are not committed. That single propert
 | Duplicate delivery | `ON CONFLICT` makes it a no-op; `rows_inserted` proves it |
 | Row arrives twice at a window boundary | 5s overlap + primary key absorb it |
 
-"Resume" is not a separate code path: **pressing Start pull again is the resume**, because the new run starts from the durable watermark. This is deliberate — fewer states, fewer bugs.
+"Resume" is not a separate code path: **pressing Start pull again is the resume**, because the new run starts from the durable watermark. This is deliberate: fewer states, fewer bugs.
 
 ### What starts a pull
 
 There are exactly two triggers, and both are events, not timers:
 
 1. The button in the header (`POST /pulls`).
-2. A single check at boot: if `AUTO_START_PULL` is on **and** `trades` is empty, start one run. That check is what keeps it a one-shot seed — once the tape has rows, every later restart does nothing.
+2. A single check at boot: if `AUTO_START_PULL` is on **and** `trades` is empty, start one run. That check is what keeps it a one-shot seed: once the tape has rows, every later restart does nothing.
 
 No interval, no queue poller, no scheduler.
 
@@ -283,7 +283,7 @@ Rows are rendered from that map, so SSE replays and REST backfill cannot produce
 
 - Windows are half-open: `[from, to)`. The pull end is `maxTs + 1ms`, otherwise the newest trade is excluded by `< to`. This exact off-by-one was caught by the integration test.
 - Within a window, the mock returns `nextCursor` (base64 of `traded_at:trade_id`) when more rows remain. The cursor is opaque to the client.
-- The dashboard uses a separate keyset cursor `(traded_at, trade_id)` — not `OFFSET`, which silently skips rows when new trades arrive.
+- The dashboard uses a separate keyset cursor `(traded_at, trade_id)`, not `OFFSET`, which silently skips rows when new trades arrive.
 
 ### Scaling (what would change for production)
 
