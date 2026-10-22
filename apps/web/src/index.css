@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #f7f6f3;
+  --color-surface: #ffffff;
+  --color-surface-2: #fbfbfa;
+  --color-line: #eaeaea;
+  --color-line-strong: #dcdad4;
+  --color-ink: #111111;
+  --color-ink-soft: #2f3437;
+  --color-muted: #787774;
+  --color-faint: #a3a19c;
+
+  --color-pale-red: #fdebec;
+  --color-pale-red-ink: #9f2f2d;
+  --color-pale-blue: #e1f3fe;
+  --color-pale-blue-ink: #1f6c9f;
+  --color-pale-green: #edf3ec;
+  --color-pale-green-ink: #346538;
+  --color-pale-yellow: #fbf3db;
+  --color-pale-yellow-ink: #956400;
+
+  --font-sans: "Geist", -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Newsreader", "Lyon Text", "Iowan Old Style", "Times New Roman", serif;
+  --font-mono: "Geist Mono", "SF Mono", ui-monospace, "JetBrains Mono", monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink-soft);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ambient warmth: soft light spots plus a barely-there paper grain. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 520px at 10% -12%, rgba(149, 100, 0, 0.05), transparent 62%),
+    radial-gradient(820px 560px at 94% 2%, rgba(31, 108, 159, 0.035), transparent 60%);
+}
+
+.ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.028;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>");
+}
+
+.micro {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" on;
+}
+
+/* Scroll entry: quiet, staggered, transform/opacity only. */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* New rows arrive pale green, then settle back into the paper. */
+.row-flash {
+  animation: row-flash 3.4s ease-out;
+}
+
+@keyframes row-flash {
+  0% {
+    background-color: #edf3ec;
+  }
+  60% {
+    background-color: #f5f8f4;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.soft-pulse {
+  animation: soft-pulse 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes soft-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 101, 56, 0.35);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 5px rgba(52, 101, 56, 0);
+  }
+}
+
+.skeleton {
+  animation: skeleton 1.8s ease-in-out infinite;
+}
+
+@keyframes skeleton {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+::selection {
+  background: #fbf3db;
+  color: #111111;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dedcd7;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cfccc6;
+  background-clip: padding-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
