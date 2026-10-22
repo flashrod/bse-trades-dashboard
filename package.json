@@ -1,0 +1,31 @@
+{
+  "name": "bse-trades-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chunked BSE trade ingestion with a live dashboard (SSE), built to survive a 30s connection cap on a 15 minute pull.",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "concurrently -n mock,api,web -c blue,green,magenta \"npm -w apps/mock-bse run dev\" \"npm -w apps/api run dev\" \"npm -w apps/web run dev\"",
+    "dev:fast": "MOCK_MS_PER_ROW=2 npm run dev",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "migrate": "npm -w apps/api run migrate",
+    "build": "npm -w apps/mock-bse run build && npm -w apps/api run build && npm -w apps/web run build",
+    "typecheck": "npm -w apps/mock-bse run typecheck && npm -w apps/api run typecheck && npm -w apps/web run typecheck",
+    "test": "npm -w apps/api run test",
+    "start:api": "npm -w apps/api run start",
+    "start:mock": "npm -w apps/mock-bse run start",
+    "demo:burst": "curl -s -X POST 'http://localhost:4001/__admin/burst?count=250'",
+    "demo:fail": "curl -s -X POST 'http://localhost:4001/__admin/fail-next?count=3'",
+    "demo:stats": "curl -s http://localhost:4000/stats"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.2"
+  }
+}
